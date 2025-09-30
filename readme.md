@@ -1,188 +1,179 @@
-![Tests](https://github.com/uwidcit/flaskmvc/actions/workflows/dev.yml/badge.svg)
+# Bread Van CLI Application
 
-# Flask MVC Template
-A template for flask applications structured in the Model View Controller pattern [Demo](https://dcit-flaskmvc.herokuapp.com/). [Postman Collection](https://documenter.getpostman.com/view/583570/2s83zcTnEJ)
+This is a command-line interface for a bread van service, allowing drivers to manage their schedules and residents to view upcoming drives and make requests.
 
+## Setup Instructions
 
-# Dependencies
-* Python3/pip3
-* Packages listed in requirements.txt
+Follow these steps to get the application running and populated with initial data.
 
-# Installing Dependencies
-```bash
-$ pip install -r requirements.txt
-```
+### 1. Initialize the Database
 
-# Configuration Management
-
-
-Configuration information such as the database url/port, credentials, API keys etc are to be supplied to the application. However, it is bad practice to stage production information in publicly visible repositories.
-Instead, all config is provided by a config file or via [environment variables](https://linuxize.com/post/how-to-set-and-list-environment-variables-in-linux/).
-
-## In Development
-
-When running the project in a development environment (such as gitpod) the app is configured via default_config.py file in the App folder. By default, the config for development uses a sqlite database.
-
-default_config.py
-```python
-SQLALCHEMY_DATABASE_URI = "sqlite:///temp-database.db"
-SECRET_KEY = "secret key"
-JWT_ACCESS_TOKEN_EXPIRES = 7
-ENV = "DEVELOPMENT"
-```
-
-These values would be imported and added to the app in load_config() function in config.py
-
-config.py
-```python
-# must be updated to inlude addtional secrets/ api keys & use a gitignored custom-config file instad
-def load_config():
-    config = {'ENV': os.environ.get('ENV', 'DEVELOPMENT')}
-    delta = 7
-    if config['ENV'] == "DEVELOPMENT":
-        from .default_config import JWT_ACCESS_TOKEN_EXPIRES, SQLALCHEMY_DATABASE_URI, SECRET_KEY
-        config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-        config['SECRET_KEY'] = SECRET_KEY
-        delta = JWT_ACCESS_TOKEN_EXPIRES
-...
-```
-
-## In Production
-
-When deploying your application to production/staging you must pass
-in configuration information via environment tab of your render project's dashboard.
-
-![perms](./images/fig1.png)
-
-# Flask Commands
-
-wsgi.py is a utility script for performing various tasks related to the project. You can use it to import and test any code in the project. 
-You just need create a manager command function, for example:
-
-```python
-# inside wsgi.py
-
-user_cli = AppGroup('user', help='User object commands')
-
-@user_cli.cli.command("create-user")
-@click.argument("username")
-@click.argument("password")
-def create_user_command(username, password):
-    create_user(username, password)
-    print(f'{username} created!')
-
-app.cli.add_command(user_cli) # add the group to the cli
+This command will create and initialize the database tables.
 
 ```
-
-Then execute the command invoking with flask cli with command name and the relevant parameters
-
-```bash
-$ flask user create bob bobpass
-```
-
-
-# Running the Project
-
-_For development run the serve command (what you execute):_
-```bash
-$ flask run
-```
-
-_For production using gunicorn (what the production server executes):_
-```bash
-$ gunicorn wsgi:app
-```
-
-# Deploying
-You can deploy your version of this app to render by clicking on the "Deploy to Render" link above.
-
-# Initializing the Database
-When connecting the project to a fresh empty database ensure the appropriate configuration is set then file then run the following command. This must also be executed once when running the app on heroku by opening the heroku console, executing bash and running the command in the dyno.
-
-```bash
 $ flask init
+
+database intialized
 ```
 
-# Database Migrations
-If changes to the models are made, the database must be'migrated' so that it can be synced with the new models.
-Then execute following commands using manage.py. More info [here](https://flask-migrate.readthedocs.io/en/latest/)
+### 2. Create a Driver
 
-```bash
-$ flask db init
-$ flask db migrate
-$ flask db upgrade
-$ flask db --help
+Create at least one driver to manage schedules. The command prompts for a name and password.
+
+```
+$ flask driver create "Agnes the Breadwoman" "agnespass"
+
+Driver: Agnes the Breadwoman created!
 ```
 
-# Testing
+### 3. Create a Resident
 
-## Unit & Integration
-Unit and Integration tests are created in the App/test. You can then create commands to run them. Look at the unit test command in wsgi.py for example
+Create residents who will interact with the drivers. The command prompts for a name, password, and street name.
 
-```python
-@test.command("user", help="Run User tests")
-@click.argument("type", default="all")
-def user_tests_command(type):
-    if type == "unit":
-        sys.exit(pytest.main(["-k", "UserUnitTests"]))
-    elif type == "int":
-        sys.exit(pytest.main(["-k", "UserIntegrationTests"]))
-    else:
-        sys.exit(pytest.main(["-k", "User"]))
+```
+$ flask resident create "Neil" "neilpass" "Main Street"
+
+Resident: alice created!
 ```
 
-You can then execute all user tests as follows
+## Usage
 
-```bash
-$ flask test user
+Once the application is set up with users, you can use the core commands, which are organized by user role.
+
+### Driver Commands
+
+These commands are used by a driver to manage their work.
+
+**Schedule a Drive**
+
+Schedules a new drive to a specific street at a given time. The command is interactive.
+
+```
+> flask driver schedule
+
+--------- Select a Driver ---------
+ID: 1 | Driver: Bob the Baker
+ID: 2 | Driver: Alice the Patissier
+ID: 3 | Driver: John the Breadman
+-----------------------------------
+
+Enter the ID of the driver to schedule: 1
+Enter the street name: Elm Street
+Enter the time (YYYY-MM-DD HH:MM): 2025-10-11 08:30
+Success: Drive scheduled for Bob the Baker on Elm Street at 2025-10-11 08:30:00
 ```
 
-You can also supply "unit" or "int" at the end of the comand to execute only unit or integration tests.
 
-You can run all application tests with the following command
+**Update Status and Location**
 
-```bash
-$ pytest
+Updates the driver's current status and location.
+
+```
+> flask driver update_status
+
+--------- Select a Driver ---------
+ID: 1 | Driver: Bob the Baker
+ID: 2 | Driver: Alice the Patissier
+ID: 3 | Driver: John the Breadman
+-----------------------------------
+
+Enter the ID of the driver to update: 1
+Enter the new status: On Route
+Enter the new location: Near Park Avenue
+Success: Bob the Baker's status updated to 'On Route' at 'Near Park Avenue'.
 ```
 
-## Test Coverage
 
-You can generate a report on your test coverage via the following command
+**View Stop Requests**
 
-```bash
-$ coverage report
+Views all pending stop requests for a specific driver.
+
+```
+> flask driver view_requests
+
+--------- Select a Driver ---------
+ID: 1 | Driver: Bob the Baker
+ID: 2 | Driver: Alice the Patissier
+ID: 3 | Driver: John the Breadman
+-----------------------------------
+
+Enter the ID of the driver to view stop requests: 1
+----------------------------------------------------- Stop Requests -----------------------------------------------------
+Drive ID: 1 | Time: 2025-09-29 05:48 PM | Resident: Charlie | Message: Please stop near the grey house with the red door.
+-------------------------------------------------------------------------------------------------------------------------
 ```
 
-You can also generate a detailed html report in a directory named htmlcov with the following comand
+### Resident Commands
 
-```bash
-$ coverage html
+These commands are used by residents to interact with the service.
+
+**View Inbox**
+
+Views all upcoming drives scheduled for the resident's street.
+Inbox with a drive:
+
+```
+> flask resident inbox
+
+------------- Available Residents -------------
+ID: 4 | Username: Charlie | Street: Main Street
+ID: 5 | Username: Diana | Street: Park Avenue
+ID: 6 | Username: Emily | Street: Elm Street
+ID: 7 | Username: Frank | Street: Oak Road
+-----------------------------------------------
+
+Enter the ID of the resident to view their inbox: 6
+
+----------------------------- Resident Inbox -----------------------------
+Drive ID: 3 | Driver: John the Breadman | Scheduled Time: 2025-09-30 01:03
+--------------------------------------------------------------------------
 ```
 
-# Troubleshooting
 
-## Views 404ing
+**Request a Stop**
 
-If your newly created views are returning 404 ensure that they are added to the list in main.py.
+Sends a stop request to a driver for a specific drive.
+Drives available:
 
-```python
-from App.views import (
-    user_views,
-    index_views
-)
+```
+> resident request_stop
 
-# New views must be imported and added to this list
-views = [
-    user_views,
-    index_views
-]
+-------------- Select a Resident --------------
+ID: 4 | Resident: Charlie | Street: Main Street
+ID: 5 | Resident: Diana | Street: Park Avenue
+ID: 6 | Resident: Emily | Street: Elm Street
+ID: 7 | Resident: Frank | Street: Oak Road
+-----------------------------------------------
+
+Enter the ID of the resident making the request: 2
+
+------------------------- Select a Drive to Stop -------------------------
+Drive ID: 3 | Driver: John the Breadman | Scheduled Time: 2025-09-30 01:03
+Drive ID: 5 | Driver: Bob the Baker | Scheduled Time: 2025-10-11 08:30
+--------------------------------------------------------------------------
+
+Enter the ID of the drive to stop: 5
+Enter a message for the request: Hi, can you stop near the brick house with the grey roof? I'll wait outside.
+Success: Stop request sent to driver Bob the Baker for drive on 2025-10-11 08:30
 ```
 
-## Cannot Update Workflow file
 
-If you are running into errors in gitpod when updateding your github actions file, ensure your [github permissions](https://gitpod.io/integrations) in gitpod has workflow enabled ![perms](./images/gitperms.png)
+**Check Driver Status**
 
-## Database Issues
+Gets the real-time status and location of a specific driver.
 
-If you are adding models you may need to migrate the database with the commands given in the previous database migration section. Alternateively you can delete you database file.
+```
+$ flask resident get_driver_status_and_location
+
+----- Select a Driver to Check ----
+ID: 1 | Driver: Bob the Baker
+ID: 2 | Driver: Alice the Patissier
+ID: 3 | Driver: John the Breadman
+-----------------------------------
+
+Enter the ID of the driver to check status: 1
+
+---------------- Driver Status -----------------
+Driver: Bob the Baker | Status: On Route | Current Location: Near Park Avenue
+----------------------------------------------
+```
