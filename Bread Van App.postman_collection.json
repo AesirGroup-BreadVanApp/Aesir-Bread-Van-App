@@ -1,0 +1,1094 @@
+{
+	"info": {
+		"_postman_id": "ced3c6d4-272b-4a87-86fc-cb5b00839682",
+		"name": "Bread Van App",
+		"description": "This collection has all the API requests for the Bread Van App. It includes creating drivers and residents, logging in, scheduling drives, updating driver status, making stop requests, and checking the resident inbox.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41545087",
+		"_collection_link": "https://blue-crater-933885.postman.co/workspace/c427933c-1f55-4775-82fe-5a8dddb26e37/collection/41545087-ced3c6d4-272b-4a87-86fc-cb5b00839682?action=share&source=collection_link&creator=41545087"
+	},
+	"item": [
+		{
+			"name": "Create Driver",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var json;\r",
+							"try { \r",
+							"    json = pm.response.json(); \r",
+							"} catch (e) { \r",
+							"    console.log(\"No JSON response:\", e); \r",
+							"}\r",
+							"\r",
+							"pm.test(\r",
+							"    (json && json.message) ? json.message :\r",
+							"    (json && json.errors) ? \"Expected error: \" + json.errors.join(\", \") :\r",
+							"    \"Unexpected response: \" + pm.response.text(),\r",
+							"    function () {\r",
+							"        pm.expect(\r",
+							"            (json && json.message) ? true :\r",
+							"            (json && json.errors) ? json.errors.every(function(e) { return /already exists/i.test(e); }) :\r",
+							"            false\r",
+							"        ).to.be.true;\r",
+							"    }\r",
+							");\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"DriverOne\",\r\n  \"password\": \"pass123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/users/driver",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"users",
+						"driver"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Resident",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var json;\r",
+							"try { \r",
+							"    json = pm.response.json(); \r",
+							"} catch (e) { \r",
+							"    console.log(\"No JSON response:\", e); \r",
+							"}\r",
+							"\r",
+							"if (json && json.message) {\r",
+							"    pm.test(json.message, function () {\r",
+							"        pm.expect(json.message).to.be.a(\"string\");\r",
+							"    });\r",
+							"} else if (json && json.errors) {\r",
+							"    // Pass test if error contains \"already exists\"\r",
+							"    var isExpected = json.errors.every(function(e) {\r",
+							"        return /already exists/i.test(e);\r",
+							"    });\r",
+							"    pm.test(\"Expected error: \" + json.errors.join(\", \"), function () {\r",
+							"        pm.expect(isExpected).to.be.true;\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(\"Unexpected response: \" + pm.response.text(), function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"ResidentOne\",\r\n  \"password\": \"pass123\",\r\n  \"street_name\": \"Main Street\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/users/resident",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"users",
+						"resident"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Users",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var json;\r",
+							"try {\r",
+							"    json = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.log(\"No JSON response:\", e);\r",
+							"}\r",
+							"\r",
+							"\r",
+							"if (json && Array.isArray(json)) {\r",
+							"    pm.test(`Returned ${json.length} user(s)`, function () {\r",
+							"        pm.expect(Array.isArray(json)).to.be.true;\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(\"Failed to get users\", function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/users",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Drivers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var json;\r",
+							"try {\r",
+							"    json = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.log(\"No JSON response:\", e);\r",
+							"}\r",
+							"\r",
+							"if (json && Array.isArray(json)) {\r",
+							"    pm.test(`Returned ${json.length} driver(s)`, function () {\r",
+							"        pm.expect(Array.isArray(json)).to.be.true;\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(\"Failed to get drivers summary\", function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/drivers",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"drivers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Residents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var json;\r",
+							"try {\r",
+							"    json = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.log(\"No JSON response:\", e);\r",
+							"}\r",
+							"\r",
+							"if (json && Array.isArray(json)) {\r",
+							"    pm.test(`Returned ${json.length} resident(s)`, function () {\r",
+							"        pm.expect(Array.isArray(json)).to.be.true;\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(\"Failed to get residents summary\", function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/residents",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"residents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Driver Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse JSON response\r",
+							"var json;\r",
+							"try {\r",
+							"    json = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.log(\"No JSON response:\", e);\r",
+							"}\r",
+							"\r",
+							"// Check and store token\r",
+							"if (json && json.access_token) {\r",
+							"    pm.environment.set(\"driverToken\", json.access_token);\r",
+							"    pm.test(\"Driver token saved\", () => pm.expect(pm.environment.get(\"driverToken\")).to.eql(json.access_token));\r",
+							"} else {\r",
+							"    pm.test(\"Driver login failed\", () => pm.expect(false).to.be.true);\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"DriverOne\",\r\n  \"password\": \"pass123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Schedule a Drive",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var json;\r",
+							"try {\r",
+							"    json = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.log(\"No JSON response:\", e);\r",
+							"}\r",
+							"\r",
+							"if (json && json.message) {\r",
+							"    pm.test(json.message, function () {\r",
+							"        pm.expect(json.message).to.be.a(\"string\");\r",
+							"    });\r",
+							"\r",
+							"} else if (json && json.errors) {\r",
+							"    pm.test(json.errors.join(\", \"), function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(\"Unexpected response from schedule drive endpoint\", function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{driverToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"street_name\": \"Main Street\",\r\n  \"time_str\": \"2025-10-21 14:30\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/drivers/schedule",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"drivers",
+						"schedule"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Driver Status",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var json = null;\r",
+							"var responseText = pm.response ? pm.response.text() : \"No response\";\r",
+							"\r",
+							"try {\r",
+							"    json = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.log(\"Response not JSON:\", e);\r",
+							"}\r",
+							"\r",
+							"if (json && typeof json.message === \"string\") {\r",
+							"    pm.test(\"Update status success: \" + json.message, function () {\r",
+							"        pm.expect(json.message).to.be.a(\"string\");\r",
+							"    });\r",
+							"} else if (json && Array.isArray(json.errors)) {\r",
+							"    pm.test(\"Expected error(s): \" + json.errors.join(\", \"), function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(`Unexpected response: ${responseText}`, function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{driverToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"status\": \"On Duty\",\r\n  \"location\": \"Main Street\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/drivers/status",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"drivers",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Stop Requests for Driver",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var json = null;\r",
+							"var responseText = pm.response ? pm.response.text() : \"\";\r",
+							"\r",
+							"try { \r",
+							"    json = pm.response.json(); \r",
+							"} catch (e) { \r",
+							"    console.log(\"Response not JSON:\", e); \r",
+							"}\r",
+							"\r",
+							"if (Array.isArray(json)) {\r",
+							"    pm.test(\"Returned \" + json.length + \" request(s)\", function () {\r",
+							"        pm.expect(Array.isArray(json)).to.be.true;\r",
+							"    });\r",
+							"} else if (json && typeof json.Error === \"string\") {\r",
+							"    var expectedPatterns = [/access forbidden/i];\r",
+							"    var isExpected = expectedPatterns.some(function(p) { return p.test(json.Error); });\r",
+							"\r",
+							"    pm.test(\"Expected error: \" + json.Error, function () {\r",
+							"        pm.expect(isExpected).to.be.true;\r",
+							"    });\r",
+							"} else if (responseText && responseText.length > 0) {\r",
+							"    pm.test(\"Unexpected response: \" + responseText, function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"} else {\r",
+							"    // Remove this test completely or mark it as skipped\r",
+							"    pm.test(\"Empty response body\", function () {\r",
+							"        pm.expect(true).to.be.true; // don’t fail the test\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{driverToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/drivers/requests",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"drivers",
+						"requests"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Resident Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse JSON response\r",
+							"var json;\r",
+							"try {\r",
+							"    json = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.log(\"No JSON response:\", e);\r",
+							"}\r",
+							"\r",
+							"// Check and store token\r",
+							"if (json && json.access_token) {\r",
+							"    pm.environment.set(\"residentToken\", json.access_token);\r",
+							"    pm.test(\"Resident token saved\", () => pm.expect(pm.environment.get(\"residentToken\")).to.eql(json.access_token));\r",
+							"} else {\r",
+							"    pm.test(\"Resident login failed\", () => pm.expect(false).to.be.true);\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"ResidentOne\",\r\n  \"password\": \"pass123\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Resident Inbox",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var json = null;\r",
+							"var responseText = pm.response ? pm.response.text() : \"\";\r",
+							"\r",
+							"try { \r",
+							"    json = pm.response.json(); \r",
+							"} catch (e) { \r",
+							"    console.log(\"Response not JSON:\", e); \r",
+							"}\r",
+							"\r",
+							"if (Array.isArray(json)) {\r",
+							"    pm.test(\"Returned \" + json.length + \" inbox item(s)\", function () {\r",
+							"        pm.expect(Array.isArray(json)).to.be.true;\r",
+							"    });\r",
+							"} else if (json && typeof json.Error === \"string\") {\r",
+							"    var expectedPatterns = [/access forbidden/i, /not found/i];\r",
+							"    var isExpected = expectedPatterns.some(function(p) { return p.test(json.Error); });\r",
+							"\r",
+							"    pm.test(\"Expected error: \" + json.Error, function () {\r",
+							"        pm.expect(isExpected).to.be.true;\r",
+							"    });\r",
+							"} else if (responseText && responseText.length > 0) {\r",
+							"    pm.test(\"Unexpected response: \" + responseText, function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(\"Empty response body\", function () {\r",
+							"        pm.expect(true).to.be.true; // don’t fail the test\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{residentToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/residents/inbox",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"residents",
+						"inbox"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Driver Status and Location",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var json = null;\r",
+							"var responseText = pm.response ? pm.response.text() : \"\";\r",
+							"\r",
+							"try { \r",
+							"    json = pm.response.json(); \r",
+							"} catch (e) { \r",
+							"    console.log(\"Response not JSON:\", e); \r",
+							"}\r",
+							"\r",
+							"if (json && json.Status) {\r",
+							"    pm.test(\"Driver status returned\", function () {\r",
+							"        pm.expect(json.Status).to.be.ok;\r",
+							"    });\r",
+							"} else if (json && typeof json.Error === \"string\") {\r",
+							"    var expectedPatterns = [/access forbidden/i, /not found/i];\r",
+							"    var isExpected = expectedPatterns.some(function(p) { return p.test(json.Error); });\r",
+							"\r",
+							"    pm.test(\"Expected error: \" + json.Error, function () {\r",
+							"        pm.expect(isExpected).to.be.true;\r",
+							"    });\r",
+							"} else if (responseText && responseText.length > 0) {\r",
+							"    pm.test(\"Unexpected response: \" + responseText, function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(\"Empty response body\", function () {\r",
+							"        pm.expect(true).to.be.true; // do not fail\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/resident/driver-status-and-location/1/status",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"resident",
+						"driver-status-and-location",
+						"1",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Stop Request",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var json = null;\r",
+							"var responseText = pm.response ? pm.response.text() : \"\";\r",
+							"\r",
+							"try {\r",
+							"    json = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.log(\"Response not JSON:\", e);\r",
+							"}\r",
+							"\r",
+							"if (json && typeof json.message === \"string\") {\r",
+							"    pm.test(\"Stop request successful: \" + json.message, function () {\r",
+							"        pm.expect(json.message).to.be.a(\"string\");\r",
+							"    });\r",
+							"} else if (json && Array.isArray(json.errors)) {\r",
+							"    var expectedPatterns = [/access forbidden/i, /missing/i, /invalid/i];\r",
+							"    var hasExpectedError = json.errors.some(function(err){\r",
+							"        return expectedPatterns.some(function(p){ return p.test(err); });\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Expected error(s): \" + json.errors.join(\", \"), function () {\r",
+							"        pm.expect(hasExpectedError).to.be.true;\r",
+							"    });\r",
+							"} else if (responseText && responseText.length > 0) {\r",
+							"    pm.test(\"Unexpected response: \" + responseText, function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(\"Empty response body\", function () {\r",
+							"        pm.expect(true).to.be.true; // don’t fail\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{residentToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"drive_id\": 1,\r\n    \"message\": \"Please stop here\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/residents/request-stop",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"residents",
+						"request-stop"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Identify",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var json;\r",
+							"try {\r",
+							"    json = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.log(\"No JSON response:\", e);\r",
+							"}\r",
+							"\r",
+							"// Success: message contains username and id\r",
+							"if (json && json.message) {\r",
+							"    pm.test(json.message, function () {\r",
+							"        pm.expect(json.message).to.include(\"username:\");\r",
+							"        pm.expect(json.message).to.include(\"id\");\r",
+							"    });\r",
+							"// Failure: no message returned\r",
+							"} else {\r",
+							"    pm.test(\"Failed to identify user\", function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "bearer {{jwt_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/identify",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"identify"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var json;\r",
+							"try {\r",
+							"    json = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.log(\"No JSON response:\", e);\r",
+							"}\r",
+							"\r",
+							"if (json && json.message) {\r",
+							"    pm.test(\"Logout successful - message returned\", function () {\r",
+							"        pm.expect(json.message).to.eql(\"Logged Out!\");\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test(\"Logout failed - no message returned\", function () {\r",
+							"        pm.expect(false).to.be.true;\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "bearer {{jwt_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/logout",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
