@@ -19,4 +19,12 @@ class Drive(db.Model):
         self.scheduled_time = scheduled_time
 
     def __repr__(self):
-        return f"Drive ID: {self.id} | Driver: {self.driver.username} | Time: {self.scheduled_time.strftime('%Y-%m-%d %I:%M %p')}"
+        return f"Drive ID: {self.id} | Street: {self.street.name} | Driver: {self.driver.username} | Time: {self.scheduled_time.strftime('%Y-%m-%d %I:%M %p')}"
+
+    def get_json(self):
+        return {
+            "id": self.id,
+            "driver_id": self.driver_id,
+            "street_id": self.street_id,
+            "scheduled_time": self.scheduled_time,
+        }

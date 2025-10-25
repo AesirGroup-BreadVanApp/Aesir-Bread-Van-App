@@ -24,3 +24,11 @@ class Resident(User):
 
     def __repr__(self):
         return f"ID: {self.id} | Username: {self.username} | Street: {self.street.name}"
+
+    def get_json(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "street_id": self.street_id,
+            "street_name": self.street.name,
+        }
