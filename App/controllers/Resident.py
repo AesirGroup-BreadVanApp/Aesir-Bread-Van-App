@@ -8,6 +8,7 @@ Required Commands for Resident
 
 
 def get_resident_inbox(resident_id):
+    # Fetch resident and their street's drives (inbox)
     resident = Resident.query.get(resident_id)
     if not resident:
         raise ValueError("Resident not found")
@@ -30,6 +31,7 @@ def get_resident_inbox(resident_id):
 
 
 def request_stop(resident_id, drive_id, message):
+    # Fetch resident and drive
     resident = Resident.query.get(resident_id)
     if not resident:
         raise ValueError("Resident not found")
@@ -50,6 +52,7 @@ def request_stop(resident_id, drive_id, message):
 
 
 def get_driver_status_and_location(driver_id):
+    # Fetch driver
     driver = db.session.get(Driver, driver_id)
     if not driver:
         raise ValueError("Driver not found")
@@ -57,12 +60,16 @@ def get_driver_status_and_location(driver_id):
 
 
 """
-Commands I decided to add for Resident
+Extra CRUD Operations for Resident
 """
+
+# CREATE
 
 
 def add_resident(username, password, street_name):
+    # Check if resident with the same username already exists
     if not User.query.filter_by(username=username).first():
+        # Check if street exists
         street = Street.query.filter_by(name=street_name).first()
         if not street:
             raise ValueError(f"Street '{street_name}' not found")
@@ -73,11 +80,27 @@ def add_resident(username, password, street_name):
         db.session.add(new_resident)
         db.session.commit()
         return new_resident
+    else:
+        raise ValueError(f"Resident '{username}' already exists")
+
+
+# READ
+
+
+def get_resident_by_id(resident_id):
+    return db.session.get(Resident, resident_id)
 
 
 def get_all_residents():
     residents = Resident.query.options(joinedload(Resident.street)).all()
     return [str(r) for r in residents] or ["No residents found"]
+
+
+def get_all_residents_json():
+    residents = Resident.query.options(joinedload(Resident.street)).all()
+    if not residents:
+        return []
+    return [resident.get_json() for resident in residents]
 
 
 def get_all_residents_summary():
@@ -88,3 +111,24 @@ def get_all_residents_summary():
         f"ID: {r.id} | Resident: {r.username} | Street: {r.street.name}"
         for r in residents
     ]
+
+
+# UPDATE
+
+
+def update_resident_street(resident_id, new_street_name):
+    # Fetch resident
+    resident = db.session.get(Resident, resident_id)
+    if not resident:
+        raise ValueError("Resident not found")
+
+    # Fetch new street
+    new_street = Street.query.filter_by(name=new_street_name).first()
+    if not new_street:
+        raise ValueError(f"Street '{new_street_name}' not found")
+
+    # Update resident's street
+    resident.street_id = new_street.id
+    db.session.add(resident)
+    db.session.commit()
+    return resident

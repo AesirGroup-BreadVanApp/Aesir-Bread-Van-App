@@ -3,12 +3,14 @@ from App.database import db
 from datetime import datetime
 from sqlalchemy.orm import joinedload, selectinload
 
+
 """
 Required Command for Driver
 """
 
 
 def schedule_drive(driver_id, street_name, time_str):
+    # Fetch driver and street
     driver = db.session.get(Driver, driver_id)
     if not driver:
         raise ValueError("Driver not found")
@@ -20,8 +22,9 @@ def schedule_drive(driver_id, street_name, time_str):
     try:
         scheduled_time = datetime.strptime(time_str, "%Y-%m-%d %H:%M")
     except ValueError:
-        raise ValueError("Invalid time format. Use 'YYYY-MM-DD HH:MM'")
+        raise ValueError("Invalid time format. Please use 'YYYY-MM-DD HH:MM'.")
 
+    # Create and save the drive
     new_drive = Drive(
         driver_id=driver.id, street_id=street.id, scheduled_time=scheduled_time
     )
@@ -31,8 +34,10 @@ def schedule_drive(driver_id, street_name, time_str):
 
 
 """
-Commands I decided to add for Driver
+Extra CRUD Operations for Driver
 """
+
+# CREATE
 
 
 def add_driver(
@@ -49,11 +54,34 @@ def add_driver(
         db.session.add(new_driver)
         db.session.commit()
         return new_driver
+    else:
+        raise ValueError(f"Driver '{username}' already exists")
+
+
+# READ
+
+
+def get_driver_by_id(driver_id):
+    return db.session.get(Driver, driver_id)
+
+
+def get_driver_details_json(driver_id):
+    driver = get_driver_by_id(driver_id)
+    if not driver:
+        raise ValueError("Driver not found")
+    return driver.get_json()
 
 
 def get_all_drivers():
     drivers = Driver.query.all()
     return [str(d) for d in drivers] or ["No drivers found"]
+
+
+def get_all_drivers_json():
+    drivers = Driver.query.all()
+    if not drivers:
+        return []
+    return [driver.get_json() for driver in drivers]
 
 
 def get_all_drivers_summary():
@@ -63,19 +91,8 @@ def get_all_drivers_summary():
     return [f"ID: {d.id} | Driver: {d.username}" for d in drivers]
 
 
-def update_driver_status(driver_id, new_status, new_location):
-    driver = Driver.query.get(driver_id)
-    if not driver:
-        raise ValueError("Driver not found")
-
-    driver.status = new_status
-    driver.current_location = new_location
-    db.session.commit()
-
-    return f"Success: {driver.username}'s status updated to '{new_status}' at '{new_location}'."
-
-
 def get_stop_requests_for_driver(driver_id):
+    # Fetch driver with related drives and stop requests
     driver = Driver.query.options(
         selectinload(Driver.drives)
         .selectinload(Drive.stop_requests)
@@ -92,3 +109,19 @@ def get_stop_requests_for_driver(driver_id):
     ]
 
     return requests or [f"No stop requests found for driver '{driver.username}'"]
+
+
+# UPDATE
+
+
+def update_driver_status(driver_id, new_status, new_location):
+    # Fetch driver
+    driver = Driver.query.get(driver_id)
+    if not driver:
+        raise ValueError("Driver not found")
+
+    driver.status = new_status
+    driver.current_location = new_location
+    db.session.commit()
+
+    return f"Success: {driver.username}'s status updated to '{new_status}' at '{new_location}'."
